@@ -128,9 +128,13 @@
         .time-grid-header { display: grid; background: #f8fafc; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; font-weight: 700; font-size: 12px; text-align: center; padding: 8px 0; }
         .time-row { display: grid; min-height: 50px; border-bottom: 1px solid #e2e8f0; }
         .time-label { font-size: 10px; color: var(--text-secondary); text-align: right; padding-right: 8px; padding-top: 4px; border-right: 1px solid var(--border-color); font-weight: 600; }
-        .time-slot-cell { border-right: 1px solid #e2e8f0; padding: 2px; position: relative; cursor: pointer; transition: background 0.1s; }
+        .time-slot-cell { border-right: 1px solid #e2e8f0; padding: 2px; position: relative; cursor: pointer; transition: background 0.1s; display: flex; flex-direction: column; gap: 2px; }
         .time-slot-cell:hover { background: #eff6ff; }
-        .grid-task-block { background: var(--accent); color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid-task-block { background: var(--accent); color: white; padding: 3px 5px; border-radius: 4px; font-size: 10px; font-weight: 600; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid-task-block.blue { background: #2563eb; }
+        .grid-task-block.green { background: #16a34a; }
+        .grid-task-block.red { background: #dc2626; }
+        .grid-task-block.range { background: #d97706; }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000; }
@@ -181,7 +185,6 @@
 
                 <button class="btn-create" onclick="openTodayModal()"><i class="fa-solid fa-plus"></i> ახალი</button>
                 
-                <!-- Backup ღილაკები (Export & Import) -->
                 <button onclick="exportBackup()" title="მონაცემების გადმოწერა (Backup)"><i class="fa-solid fa-download"></i></button>
                 <label title="მონაცემების ატვირთვა (Import)" style="background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center;">
                     <i class="fa-solid fa-upload"></i>
@@ -236,7 +239,7 @@
                         <option value="Review">შეთანხმებაში</option>
                         <option value="Live" style="color:var(--success);">გაშვებულია</option>
                     </select>
-                    <button type="button" class="btn-create" onclick="addTaskItem()" style="padding:7px 12px; flex-grow:1;">დამატება სიაში</button>
+                    <button type="button" class="btn-create" id="add-task-btn" onclick="addTaskItem()" style="padding:7px 12px; flex-grow:1;">დამატება სიაში</button>
                 </div>
                 <div class="tasks-list" id="modal-tasks-container" style="margin-top:6px;"></div>
             </div>
@@ -285,6 +288,7 @@
         let activeDateKey = '';
         let tempTasks = [];
         let tempImage = '';
+        let editingTaskIndex = null;
 
         function initSelects() {
             const mSelect = document.getElementById('jump-month');
@@ -332,7 +336,6 @@
             renderCalendar();
         }
 
-        // კლავიატურის ისრებით გადართვა (დამატებულია)
         document.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
             if (e.key === 'ArrowLeft') changePeriod(-1);
@@ -413,7 +416,7 @@
             if(numDays === 7) {
                 let dayOfWeek = startDate.getDay();
                 let diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                startDate.setDate(diff);
+                startDate = new Date(startDate.setDate(diff));
             }
 
             let datesArr = [];
@@ -436,8 +439,13 @@
                     let key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
                     let data = calendarData[key] || { tasks: [] };
                     
-                    let matchingTask = data.tasks.find(t => t.time && t.time.startsWith(String(hour).padStart(2, '0')));
-                    let cellContent = matchingTask ? `<div class="grid-task-block">${matchingTask.text}</div>` : '';
+                    let matchingTasks = data.tasks.filter(t => {
+                        if (!t.time) return false;
+                        let taskHour = parseInt(t.time.split(':')[0]);
+                        return taskHour === hour;
+                    });
+
+                    let cellContent = matchingTasks.map(t => `<div class="grid-task-block ${t.color}">${t.time} - ${t.text}</div>`).join('');
 
                     bodyHtml += `<div class="time-slot-cell" onclick="openModal(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})">${cellContent}</div>`;
                 }
@@ -456,6 +464,8 @@
             document.getElementById('modal-comment-input').value = data.comment || '';
             tempTasks = [...(data.tasks || [])];
             tempImage = data.image || '';
+            editingTaskIndex = null;
+            resetTaskInputs();
             renderModalTasks();
             renderImagePreview();
             document.getElementById('day-modal').style.display = 'flex';
@@ -474,9 +484,34 @@
             const color = document.getElementById('new-task-color').value;
             const status = document.getElementById('new-task-status').value;
             if (!text) return;
-            tempTasks.push({ time, text, color, status });
-            document.getElementById('new-task-input').value = '';
+
+            if (editingTaskIndex !== null) {
+                tempTasks[editingTaskIndex] = { time, text, color, status };
+                editingTaskIndex = null;
+                document.getElementById('add-task-btn').innerText = "დამატება სიაში";
+            } else {
+                tempTasks.push({ time, text, color, status });
+            }
+
+            resetTaskInputs();
             renderModalTasks();
+        }
+
+        function editTaskItem(idx) {
+            const t = tempTasks[idx];
+            document.getElementById('new-task-time').value = t.time || '10:00';
+            document.getElementById('new-task-input').value = t.text || '';
+            document.getElementById('new-task-color').value = t.color || 'blue';
+            document.getElementById('new-task-status').value = t.status || 'Draft';
+            editingTaskIndex = idx;
+            document.getElementById('add-task-btn').innerText = "შესწორება";
+        }
+
+        function resetTaskInputs() {
+            document.getElementById('new-task-input').value = '';
+            document.getElementById('new-task-time').value = '10:00';
+            editingTaskIndex = null;
+            document.getElementById('add-task-btn').innerText = "დამატება სიაში";
         }
 
         function addRangeTask() {
@@ -504,7 +539,10 @@
             container.innerHTML = tempTasks.map((t, idx) => `
                 <div class="task-row">
                     <span><strong>[${t.time}]</strong> ${t.text} <em style="color:var(--text-secondary)">(${t.status})</em></span>
-                    <button onclick="tempTasks.splice(${idx},1); renderModalTasks()" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" onclick="editTaskItem(${idx})" style="background:none; border:none; color:var(--accent); cursor:pointer;" title="რედაქტირება"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="tempTasks.splice(${idx},1); renderModalTasks()" style="background:none; border:none; color:var(--danger); cursor:pointer;" title="წაშლა"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>
             `).join('');
         }
