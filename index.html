@@ -7,6 +7,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-hnsAEikXOQ9dQFEP55CbR5t7fGGPAMk",
+            authDomain: "marketing-calendar-1a193.firebaseapp.com",
+            projectId: "marketing-calendar-1a193",
+            storageBucket: "marketing-calendar-1a193.firebasestorage.app",
+            messagingSenderId: "448467919677",
+            appId: "1:448467919677:web:47b3ae4e9d00ee669d9b54"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+
+        // როცა ფაილი იტვირთება, ვქაჩავთ მონაცემებს Firebase-იდან
+        window.loadCloudData();
+    </script>
+
     <style>
         :root {
             --bg-color: #f1f5f9;
@@ -182,12 +208,7 @@
 
                 <button class="btn-create" onclick="openTodayModal()"><i class="fa-solid fa-plus"></i> ახალი</button>
                 
-                <button onclick="exportBackup()" title="მონაცემების გადმოწერა (Backup)"><i class="fa-solid fa-download"></i></button>
-                <label title="მონაცემების ატვირთვა (Import)" style="background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center;">
-                    <i class="fa-solid fa-upload"></i>
-                    <input type="file" id="import-file-input" accept=".json" style="display:none;" onchange="importBackup(event)">
-                </label>
-
+                <button onclick="exportBackup()" title="მონაცემების გადმოწერა"><i class="fa-solid fa-download"></i></button>
                 <button onclick="window.print()" title="ბეჭდვა / PDF"><i class="fa-solid fa-print"></i></button>
 
                 <button onclick="changePeriod(-1)"><i class="fa-solid fa-chevron-left"></i></button>
@@ -213,9 +234,9 @@
             <div class="form-group">
                 <label>სწრაფი შაბლონიდან დამატება:</label>
                 <div style="display:flex; gap:5px;">
-                    <button type="button" onclick="insertTemplate('სასწრაფო დავალება', '09:00', 'red')"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> სასწრაფო</button>
-                    <button type="button" onclick="insertTemplate('მნიშვნელოვანი შეხვედრა', '12:00', 'blue')"><i class="fa-solid fa-star" style="color:var(--warning)"></i> მნიშვნელოვანი</button>
-                    <button type="button" onclick="insertTemplate('დასრულებული ამოცანა', '16:00', 'green')"><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> გაკეთებული</button>
+                    <button type="button" onclick="insertTemplate('სასწრაფო დავალება', '09:00', 'red')">სასწრაფო</button>
+                    <button type="button" onclick="insertTemplate('მნიშვნელოვანი შეხვედრა', '12:00', 'blue')">მნიშვნელოვანი</button>
+                    <button type="button" onclick="insertTemplate('დასრულებული ამოცანა', '16:00', 'green')">გაკეთებული</button>
                 </div>
             </div>
 
@@ -242,7 +263,7 @@
             </div>
 
             <div class="form-group" style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                <label style="color:var(--accent);"><i class="fa-solid fa-arrows-split-up-and-left"></i> მრავალდღიანი კამპანიის დამატება (Range):</label>
+                <label style="color:var(--accent);">მრავალდღიანი კამპანიის დამატება (Range):</label>
                 <div style="display:flex; gap:5px; margin-top:4px;">
                     <input type="date" id="range-start" style="flex:1;">
                     <input type="date" id="range-end" style="flex:1;">
@@ -281,11 +302,35 @@
         let currentView = 'month';
         let searchQuery = '';
 
-        let calendarData = JSON.parse(localStorage.getItem('enterprise_calendar_data_v6')) || JSON.parse(localStorage.getItem('enterprise_calendar_data_v5')) || {};
+        let calendarData = {};
         let activeDateKey = '';
         let tempTasks = [];
         let tempImage = '';
         let editingTaskIndex = null;
+
+        // Firebase-დან მონაცემების წამოღება
+        window.loadCloudData = async function() {
+            try {
+                const docRef = window.doc(window.db, "calendar", "main_data");
+                const docSnap = await window.getDoc(docRef);
+                if (docSnap.exists()) {
+                    calendarData = docSnap.data();
+                    renderCalendar();
+                }
+            } catch (err) {
+                console.error("მონაცემების ჩატვირთვის შეცდომა:", err);
+            }
+        };
+
+        // Firebase-ში მონაცემების შენახვა
+        async function saveCloudData() {
+            try {
+                await window.setDoc(window.doc(window.db, "calendar", "main_data"), calendarData);
+            } catch (err) {
+                console.error("შენახვის შეცდომა:", err);
+                alert("ვერ შეინახა ბაზაში!");
+            }
+        }
 
         function initSelects() {
             const mSelect = document.getElementById('jump-month');
@@ -318,8 +363,6 @@
                 currentMonth += dir;
                 if (currentMonth > 11) { currentMonth = 0; currentYear++; }
                 if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-                if (currentYear < 2026) { currentYear = 2026; currentMonth = 0; }
-                if (currentYear > 2029) { currentYear = 2029; currentMonth = 11; }
             } else if (currentView === 'week') {
                 currentDate.setDate(currentDate.getDate() + (dir * 7));
                 currentYear = currentDate.getFullYear();
@@ -332,12 +375,6 @@
             updateSelectsUI();
             renderCalendar();
         }
-
-        document.addEventListener('keydown', (e) => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-            if (e.key === 'ArrowLeft') changePeriod(-1);
-            if (e.key === 'ArrowRight') changePeriod(1);
-        });
 
         function renderCalendar() {
             updateSelectsUI();
@@ -531,7 +568,7 @@
                 calendarData[k].tasks.push({ time: '00:00', text: `[კამპანია] ${title}`, color: 'range', status: 'Live' });
                 curr.setDate(curr.getDate() + 1);
             }
-            localStorage.setItem('enterprise_calendar_data_v6', JSON.stringify(calendarData));
+            saveCloudData();
             closeModal();
             renderCalendar();
         }
@@ -573,14 +610,14 @@
             }
         }
 
-        function saveDayData() {
+        async function saveDayData() {
             calendarData[activeDateKey] = {
                 tasks: tempTasks,
                 comment: document.getElementById('modal-comment-input').value,
                 isImportant: document.getElementById('modal-important-checkbox').checked,
                 image: tempImage
             };
-            localStorage.setItem('enterprise_calendar_data_v6', JSON.stringify(calendarData));
+            await saveCloudData();
             closeModal();
             renderCalendar();
         }
@@ -591,24 +628,6 @@
             dlAnchorElem.setAttribute("href", dataStr);
             dlAnchorElem.setAttribute("download", "marketing_calendar_backup.json");
             dlAnchorElem.click();
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    calendarData = importedData;
-                    localStorage.setItem('enterprise_calendar_data_v6', JSON.stringify(calendarData));
-                    renderCalendar();
-                    alert("მონაცემები წარმატებით აიტვირთა!");
-                } catch (err) {
-                    alert("ფაილის წაკითხვის შეცდომაა!");
-                }
-            };
-            reader.readAsText(file);
         }
 
         initSelects();
