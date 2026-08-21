@@ -630,6 +630,13 @@
             dlAnchorElem.click();
         }
 
+        // ლეპტოპის კლავიატურის ისრებით გადართვა
+        document.addEventListener('keydown', (event) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            if (event.key === 'ArrowLeft') changePeriod(-1);
+            if (event.key === 'ArrowRight') changePeriod(1);
+        });
+
         initSelects();
         renderCalendar();
     </script>
