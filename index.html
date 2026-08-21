@@ -111,7 +111,7 @@
         .day-cell.is-today .day-number { background: var(--accent); color: white; }
         .day-cell.is-important .day-number { background: var(--danger); color: white; }
 
-        .day-content { flex-grow: 1; margin-top: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; z-index: 2; word-break: break-word; }
+        .day-content { flex-grow: 1; margin-top: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; z-index: 2; }
         .task-tag {
             padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;
             display: flex; justify-content: space-between; align-items: center; gap: 4px;
@@ -332,6 +332,7 @@
             renderCalendar();
         }
 
+        // კლავიატურის ისრებით გადართვა (დამატებულია)
         document.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
             if (e.key === 'ArrowLeft') changePeriod(-1);
