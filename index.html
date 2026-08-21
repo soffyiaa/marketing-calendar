@@ -284,7 +284,8 @@
         let currentView = 'month';
         let searchQuery = '';
 
-        let calendarData = JSON.parse(localStorage.getItem('enterprise_calendar_data_v6')) || {};
+        // ძველი და ახალი ვერსიების მონაცემების გაერთიანება, რომ არ დაიკარგოს შენახული ინფორმაცია
+        let calendarData = JSON.parse(localStorage.getItem('enterprise_calendar_data_v6')) || JSON.parse(localStorage.getItem('enterprise_calendar_data_v5')) || {};
         let activeDateKey = '';
         let tempTasks = [];
         let tempImage = '';
@@ -425,7 +426,7 @@
                 d.setDate(startDate.getDate() + i);
                 datesArr.push(d);
                 let dayName = weekdaysNames[(d.getDay() + 6) % 7];
-                headerHtml += `<div>${dayName} (${d.getDate()} ${monthsNames[d.getMonth()]})</div>`;
+                headerHtml += `<div>${dayName} ${d.getDate()}</div>`;
             }
             headerHtml += `</div>`;
 
