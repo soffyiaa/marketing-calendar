@@ -7,31 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK (Modular) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyA-hnsAEikkXOQ9dQFEP55Cbr5t7fGGPAMk",
-            authDomain: "marketing-calendar-1a193.firebaseapp.com",
-            projectId: "marketing-calendar-1a193",
-            storageBucket: "marketing-calendar-1a193.firebasestorage.app",
-            messagingSenderId: "448467919677",
-            appId: "1:448467919677:web:47b3ae49d00ee669d9b54"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.setDoc = setDoc;
-
-        window.loadCloudData();
-    </script>
-    
     <style>
         :root {
             --bg-color: #f1f5f9;
@@ -49,7 +24,12 @@
             --radius: 14px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
         body {
             background-color: var(--bg-color);
@@ -57,124 +37,350 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             padding: 20px;
         }
 
-        .container { width: 100%; max-width: 1500px; }
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
 
         header {
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--card-bg);
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
-            border: 1px solid var(--border-color);
         }
 
-        h1 { font-size: 18px; font-weight: 700; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        .nav-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .header-title p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
 
-        .search-box { position: relative; display: flex; align-items: center; }
-        .search-box input {
-            padding: 7px 12px 7px 32px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+        .cloud-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
-            outline: none;
-            width: 180px;
+            font-weight: 500;
+            color: var(--success);
+            background: #f0fdf4;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .controls-bar {
+            background: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--bg-color);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
+
+        .view-switch {
+            display: flex;
+            background: var(--bg-color);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .view-btn.active {
+            background: var(--card-bg);
+            color: var(--accent);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .main-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .calendar-cell {
+            background: var(--card-bg);
+            min-height: 110px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-cell:hover {
             background: #f8fafc;
         }
-        .search-box input:focus { width: 220px; border-color: var(--accent); background: #fff; }
-        .search-box i { position: absolute; left: 10px; color: var(--text-secondary); font-size: 12px; }
 
-        .view-switchers { display: flex; background: #e2e8f0; padding: 3px; border-radius: 8px; gap: 3px; }
-        .view-btn {
-            background: transparent; border: none; padding: 5px 10px; font-size: 12px; font-weight: 500;
-            border-radius: 6px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s;
-        }
-        .view-btn.active { background: white; color: var(--accent); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-        select, button {
-            background: #f8fafc; border: 1px solid var(--border-color); padding: 8px 12px;
-            border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: all 0.15s;
-        }
-        button:hover, select:hover { background: #f1f5f9; border-color: #94a3b8; }
-
-        .btn-create { background: var(--accent); color: white; border: none; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .btn-create:hover { background: var(--accent-hover); }
-
-        .calendar-card {
-            background: var(--card-bg); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 20px; border: 1px solid var(--border-color);
+        .calendar-cell.other-month {
+            opacity: 0.4;
+            background: #fafafa;
         }
 
-        .month-title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 15px; text-transform: capitalize; }
-
-        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-secondary); font-size: 11px; margin-bottom: 10px; text-transform: uppercase; }
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-
-        .day-cell {
-            background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px;
-            height: 140px; padding: 6px; display: flex; flex-direction: column;
-            justify-content: space-between; position: relative; cursor: pointer; overflow: hidden;
+        .calendar-cell.today {
+            background: #eff6ff;
         }
-        .day-cell:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08); }
-        .day-cell.empty { background: #f8fafc; border-style: dashed; cursor: default; }
-        .day-cell.is-today { border: 2px solid var(--accent); }
-        .day-cell.is-important { border: 2px solid var(--danger); background: var(--danger-bg); }
 
-        .day-number-container { display: flex; justify-content: space-between; align-items: center; z-index: 2; }
-        .day-number { font-size: 11px; font-weight: 600; background: #e2e8f0; padding: 1px 5px; border-radius: 4px; }
-        .day-cell.is-today .day-number { background: var(--accent); color: white; }
-        .day-cell.is-important .day-number { background: var(--danger); color: white; }
-
-        .day-content { flex-grow: 1; margin-top: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; z-index: 2; }
-        .task-tag {
-            padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;
-            display: flex; justify-content: space-between; align-items: center; gap: 4px;
+        .cell-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
-        .task-tag.blue { background: #eff6ff; color: #1d4ed8; border-left: 2px solid #2563eb; }
-        .task-tag.green { background: #f0fdf4; color: #15803d; border-left: 2px solid #22c55e; }
-        .task-tag.red { background: #fef2f2; color: #b91c1c; border-left: 2px solid #ef4444; }
-        .task-tag.range { background: #fef3c7; color: #92400e; border-left: 2px solid #d97706; }
 
-        .day-thumb { width: 100%; height: 22px; object-fit: cover; border-radius: 3px; margin-top: 2px; }
+        .event-chip {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        .time-grid-container { display: flex; flex-direction: column; max-height: 650px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
-        .time-grid-header { display: grid; background: #f8fafc; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; font-weight: 700; font-size: 12px; text-align: center; padding: 8px 0; }
-        .time-row { display: grid; min-height: 50px; border-bottom: 1px solid #e2e8f0; }
-        .time-label { font-size: 10px; color: var(--text-secondary); text-align: right; padding-right: 8px; padding-top: 4px; border-right: 1px solid var(--border-color); font-weight: 600; }
-        .time-slot-cell { border-right: 1px solid #e2e8f0; padding: 2px; position: relative; cursor: pointer; transition: background 0.1s; }
-        .time-slot-cell:hover { background: #eff6ff; }
-        .grid-task-block { background: var(--accent); color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 24px; border-radius: var(--radius); width: 580px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; border: 1px solid var(--border-color); }
-        .modal-content h3 { font-size: 16px; font-weight: 700; }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        .form-group { display: flex; flex-direction: column; gap: 4px; }
-        .form-group label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-        .form-group input, .form-group textarea, .form-group select { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; outline: none; }
-        
-        .task-add-box { display: flex; gap: 5px; flex-wrap: wrap; }
-        .tasks-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
-        .task-row { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 8px; border-radius: 6px; font-size: 11px; border: 1px solid #e2e8f0; }
+        .modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 550px;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        #cloud-status { font-size: 11px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
 
-        @media print {
-            header, .view-switchers, .search-box, .btn-create, button { display: none !important; }
-            body { background: white; }
-            .calendar-card { box-shadow: none; border: none; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* List / Week / Day view adjustments for full text */
+        .list-view-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .list-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .list-item-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 8px;
         }
     </style>
 </head>
@@ -182,411 +388,364 @@
 
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-calendar-days"></i> Enterprise Marketing Calendar</h1>
-            <div id="cloud-status"><i class="fa-solid fa-cloud"></i> სინქრონიზებულია</div>
-            <div class="nav-controls">
-                <div class="search-box">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="search-input" placeholder="მოძებნე აქცია..." oninput="handleSearch(this.value)">
-                </div>
-                
-                <select id="jump-month" onchange="jumpToSelectedDate()"></select>
-                <select id="jump-year" onchange="jumpToSelectedDate()">
-                    <option value="2026">2026</option>
-                    <option value="2027">2027</option>
-                    <option value="2028">2028</option>
-                    <option value="2029">2029</option>
-                </select>
-
-                <div class="view-switchers">
-                    <button class="view-btn active" id="btn-view-month" onclick="switchView('month')">თვე</button>
-                    <button class="view-btn" id="btn-view-week" onclick="switchView('week')">კვირა</button>
-                    <button class="view-btn" id="btn-view-day" onclick="switchView('day')">დღე</button>
-                </div>
-
-                <button class="btn-create" onclick="openTodayModal()"><i class="fa-solid fa-plus"></i> ახალი</button>
-                <button onclick="window.print()" title="ბეჭდვა / PDF"><i class="fa-solid fa-print"></i></button>
-
-                <button onclick="changePeriod(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-                <button onclick="changePeriod(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="header-title">
+                <h1><i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i> მარკეტინგული კალენდარი</h1>
+                <p>სრული მენეჯმენტი და ღრუბლოვანი სინქრონიზაცია</p>
+            </div>
+            <div class="cloud-status">
+                <i class="fa-solid fa-cloud-arrow-up"></i> ბაზა დაკავშირებულია
             </div>
         </header>
 
-        <div id="calendar-container"></div>
+        <div class="controls-bar">
+            <div class="nav-group">
+                <button class="btn" onclick="changePeriod(-1)"><i class="fa-solid fa-chevron-left"></i> წინა</button>
+                <button class="btn" onclick="goToday()">დღეს</button>
+                <button class="btn" onclick="changePeriod(1)">შემდეგი <i class="fa-solid fa-chevron-right"></i></button>
+                <h2 id="currentMonthYear" style="font-size: 18px; font-weight: 600; margin-left: 10px;"></h2>
+            </div>
+            
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="view-switch">
+                    <button class="view-btn active" onclick="switchView('month')">თვე</button>
+                    <button class="view-btn" onclick="switchView('week')">კვირა</button>
+                    <button class="view-btn" onclick="switchView('day')">დღე</button>
+                </div>
+                <button class="btn btn-primary" onclick="openModalForAdd()"><i class="fa-solid fa-plus"></i> ახალი აქცია</button>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContainer">
+            <!-- კალენდარი ან სია აისახება აქ -->
+        </div>
     </div>
 
-    <div class="modal" id="day-modal">
-        <div class="modal-content">
-            <h3 id="modal-date-title">დღის დეტალები</h3>
-            
-            <div class="form-group">
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--danger);">
-                    <input type="checkbox" id="modal-important-checkbox" style="width:14px; height:14px;">
-                    <i class="fa-solid fa-fire"></i> კრიტიკული თარიღი / სტარტი
-                </label>
+    <!-- Modal for Add/Edit -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">აქციის დამატება</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-
+            <input type="hidden" id="eventId">
             <div class="form-group">
-                <label>სწრაფი შაბლონიდან დამატება:</label>
-                <div style="display:flex; gap:5px;">
-                    <button type="button" onclick="insertTemplate('სასწრაფო დავალება', '09:00', 'red')"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> სასწრაფო</button>
-                    <button type="button" onclick="insertTemplate('მნიშვნელოვანი შეხვედრა', '12:00', 'blue')"><i class="fa-solid fa-star" style="color:var(--warning)"></i> მნიშვნელოვანი</button>
-                    <button type="button" onclick="insertTemplate('დასრულებული ამოცანა', '16:00', 'green')"><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> გაკეთებული</button>
+                <label>დასახელება / თემა</label>
+                <input type="text" id="eventTitle" class="form-control" placeholder="მაგ: B2S აქცია...">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>თარიღი</label>
+                    <input type="date" id="eventDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>დრო</label>
+                    <input type="time" id="eventTime" class="form-control" value="00:00">
                 </div>
             </div>
-
-            <div class="form-group">
-                <label>დრო და აქცია:</label>
-                <div class="task-add-box">
-                    <input type="time" id="new-task-time" value="10:00" style="width:80px;">
-                    <input type="text" id="new-task-input" placeholder="აქციის სახელი..." style="flex-grow:1;" onkeypress="if(event.key==='Enter') addTaskItem()">
-                    <select id="new-task-color" style="width:75px;">
-                        <option value="blue">ლურჯი</option>
-                        <option value="green">მწვანე</option>
-                        <option value="red">წითელი</option>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>კატეგორია</label>
+                    <select id="eventCategory" class="form-control">
+                        <option value="კამპანია">კამპანია</option>
+                        <option value="სოც-ქსელი">სოც-ქსელი</option>
+                        <option value="ღონისძიება">ღონისძიება</option>
+                        <option value="სხვა">სხვა</option>
                     </select>
                 </div>
-                <div style="margin-top:5px; display:flex; gap:5px;">
-                    <select id="new-task-status" style="width:110px;">
-                        <option value="Draft">მზადდება</option>
-                        <option value="Review">შეთანხმებაში</option>
-                        <option value="Live" style="color:var(--success);">გაშვებულია</option>
+                <div class="form-group">
+                    <label>ფერი</label>
+                    <select id="eventColor" class="form-control">
+                        <option value="#2563eb">ლურჯი</option>
+                        <option value="#16a34a">მწვანე</option>
+                        <option value="#d97706">ნარინჯისფერი</option>
+                        <option value="#dc2626">წითელი</option>
+                        <option value="#9333ea">იისფერი</option>
                     </select>
-                    <button type="button" class="btn-create" onclick="addTaskItem()" style="padding:7px 12px; flex-grow:1;">დამატება სიაში</button>
-                </div>
-                <div class="tasks-list" id="modal-tasks-container" style="margin-top:6px;"></div>
-            </div>
-
-            <div class="form-group" style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                <label style="color:var(--accent);"><i class="fa-solid fa-arrows-split-up-and-left"></i> მრავალდღიანი კამპანია (Range):</label>
-                <div style="display:flex; gap:5px; margin-top:4px;">
-                    <input type="date" id="range-start" style="flex:1;">
-                    <input type="date" id="range-end" style="flex:1;">
-                    <input type="text" id="range-title" placeholder="კამპანიის სახელი..." style="flex:2;">
-                    <button type="button" onclick="addRangeTask()" class="btn-create" style="padding:6px 10px;">დამატება</button>
                 </div>
             </div>
-
             <div class="form-group">
-                <label>ფოტოს ჩასმა დღეში:</label>
-                <input type="file" id="modal-image-input" accept="image/*" onchange="handleImageUpload(event)">
-                <div id="image-preview-container" style="margin-top: 5px; display: flex; align-items: center; gap: 10px;"></div>
+                <label>სრული აღწერა / დეტალები</label>
+                <textarea id="eventDesc" class="form-control" placeholder="ჩაწერეთ სრული ინფორმაცია..."></textarea>
             </div>
-
-            <div class="form-group">
-                <label>აღწერა / შენიშვნა:</label>
-                <textarea id="modal-comment-input" placeholder="დეტალები..."></textarea>
-            </div>
-
-            <div class="modal-buttons">
-                <button onclick="closeModal()">გაუქმება</button>
-                <button class="btn-create" onclick="saveDayData()" style="padding:7px 14px;">შენახვა</button>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">გაუქმება</button>
+                <button class="btn btn-primary" onclick="saveEvent()">შენახვა</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const monthsNames = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"];
-        const weekdaysNames = ["ორშ", "სამ", "ოთხ", "ხუთ", "პარ", "შაბ", "კვი"];
-        
-        let now = new Date();
-        let currentYear = now.getFullYear();
-        let currentMonth = now.getMonth();
-        let currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-hnsAEikkXOQ9dQFEP55Cbr5t7fGGPAMk",
+            authDomain: "marketing-calendar-1a193.firebaseapp.com",
+            projectId: "marketing-calendar-1a193",
+            storageBucket: "marketing-calendar-1a193.firebasestorage.app",
+            messagingSenderId: "448467919677",
+            appId: "1:448467919677:web:47b3ae4e9d00ee669d9b54"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         let currentView = 'month';
-        let searchQuery = '';
+        let currentDate = new Date();
+        let events = [];
 
-        let calendarData = {};
-        let activeDateKey = '';
-        let tempTasks = [];
-        let tempImage = '';
-
-        window.loadCloudData = async function() {
+        window.loadEventsFromCloud = async function() {
             try {
-                const docRef = window.doc(window.db, "calendar", "main_data");
-                const docSnap = await window.getDoc(docRef);
-                if (docSnap.exists()) {
-                    calendarData = docSnap.data().payload || {};
-                } else {
-                    calendarData = {};
+                const querySnapshot = await getDocs(collection(db, "events"));
+                events = [];
+                querySnapshot.forEach((docSnap) => {
+                    events.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderCalendar();
+            } catch (e) {
+                console.error("ბაზიდან წაკითხვის შეცდომა: ", e);
+            }
+        };
+
+        window.saveEventToCloud = async function(eventData) {
+            try {
+                await setDoc(doc(db, "events", eventData.id), eventData);
+                loadEventsFromCloud();
+            } catch (e) {
+                console.error("შენახვის შეცდომა: ", e);
+            }
+        };
+
+        window.deleteEventFromCloud = async function(id) {
+            if (confirm("ნამდვილად გსურთ წაშლა?")) {
+                try {
+                    await deleteDoc(doc(db, "events", id));
+                    loadEventsFromCloud();
+                } catch (e) {
+                    console.error("წაშლის შეცდომა: ", e);
                 }
-                renderCalendar();
-            } catch (err) {
-                console.error("ბაზიდან წამოღების შეცდომა:", err);
-                calendarData = JSON.parse(localStorage.getItem('enterprise_calendar_data_v6')) || {};
-                renderCalendar();
             }
-        }
+        };
 
-        async function saveCloudData() {
-            try {
-                const docRef = window.doc(window.db, "calendar", "main_data");
-                await window.setDoc(docRef, { payload: calendarData });
-                document.getElementById('cloud-status').innerHTML = '<i class="fa-solid fa-cloud" style="color:var(--success)"></i> შენახულია ბაზაში';
-            } catch (err) {
-                console.error("ბაზაში შენახვის შეცდომა:", err);
-                document.getElementById('cloud-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> შეცდომა';
-                localStorage.setItem('enterprise_calendar_data_v6', JSON.stringify(calendarData));
-            }
-        }
-
-        function initSelects() {
-            const mSelect = document.getElementById('jump-month');
-            mSelect.innerHTML = monthsNames.map((m, idx) => `<option value="${idx}">${m}</option>`).join('');
-        }
-
-        function updateSelectsUI() {
-            document.getElementById('jump-month').value = currentMonth;
-            document.getElementById('jump-year').value = currentYear;
-        }
-
-        function jumpToSelectedDate() {
-            currentMonth = parseInt(document.getElementById('jump-month').value);
-            currentYear = parseInt(document.getElementById('jump-year').value);
-            currentDate = new Date(currentYear, currentMonth, 1);
-            renderCalendar();
-        }
-
-        function switchView(view) {
+        window.switchView = function(view) {
             currentView = view;
             document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-view-${view}`).classList.add('active');
+            event.target.classList.add('active');
             renderCalendar();
-        }
+        };
 
-        function handleSearch(q) { searchQuery = q.toLowerCase(); renderCalendar(); }
-        
-        function changePeriod(dir) {
+        window.changePeriod = function(direction) {
             if (currentView === 'month') {
-                currentMonth += dir;
-                if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-                if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                currentDate.setMonth(currentDate.getMonth() + direction);
             } else if (currentView === 'week') {
-                currentDate.setDate(currentDate.getDate() + (dir * 7));
-                currentYear = currentDate.getFullYear();
-                currentMonth = currentDate.getMonth();
+                currentDate.setDate(currentDate.getDate() + (direction * 7));
             } else if (currentView === 'day') {
-                currentDate.setDate(currentDate.getDate() + dir);
-                currentYear = currentDate.getFullYear();
-                currentMonth = currentDate.getMonth();
+                currentDate.setDate(currentDate.getDate() + direction);
             }
-            updateSelectsUI();
             renderCalendar();
-        }
+        };
 
-        function renderCalendar() {
-            updateSelectsUI();
-            const container = document.getElementById('calendar-container');
+        window.goToday = function() {
+            currentDate = new Date();
+            renderCalendar();
+        };
+
+        // Keyboard arrow navigation
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('eventModal').classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') {
+                changePeriod(-1);
+            } else if (e.key === 'ArrowRight') {
+                changePeriod(1);
+            }
+        });
+
+        window.renderCalendar = function() {
+            const container = document.getElementById('mainContainer');
+            const titleEl = document.getElementById('currentMonthYear');
             container.innerHTML = '';
-            if (currentView === 'month') renderMonth(container);
-            else if (currentView === 'week') renderTimeGrid(container, 7);
-            else if (currentView === 'day') renderTimeGrid(container, 1);
-        }
 
-        function renderMonth(container) {
-            const card = document.createElement('div');
-            card.className = 'calendar-card';
-            card.innerHTML = `<div class="month-title">${monthsNames[currentMonth]} ${currentYear}</div>`;
+            const months = ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი', 'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'];
 
-            const weekdays = document.createElement('div');
-            weekdays.className = 'weekdays';
-            weekdaysNames.forEach(d => weekdays.innerHTML += `<div>${d}</div>`);
-            card.appendChild(weekdays);
-
-            const grid = document.createElement('div');
-            grid.className = 'days-grid';
-
-            let firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            firstDay = (firstDay === 0) ? 6 : firstDay - 1;
-            let totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="day-cell empty"></div>`;
-
-            let today = new Date();
-
-            for (let d = 1; d <= totalDays; d++) {
-                const key = `${currentYear}-${currentMonth}-${d}`;
-                const data = calendarData[key] || { tasks: [], isImportant: false, comment: '', image: '' };
+            if (currentView === 'month') {
+                titleEl.innerText = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
                 
-                const matchesSearch = searchQuery === '' || 
-                    data.tasks.some(t => t.text.toLowerCase().includes(searchQuery)) ||
-                    data.comment.toLowerCase().includes(searchQuery);
+                let gridHTML = `<div class="calendar-grid">
+                    <div class="calendar-day-header">ორშ</div>
+                    <div class="calendar-day-header">სამ</div>
+                    <div class="calendar-day-header">ოთხ</div>
+                    <div class="calendar-day-header">ხუთ</div>
+                    <div class="calendar-day-header">პარ</div>
+                    <div class="calendar-day-header">შაბ</div>
+                    <div class="calendar-day-header">კვ</div>`;
 
-                let isTodayCell = (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear());
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+                const totalDays = new Date(year, month + 1, 0).getDate();
+                const prevTotalDays = new Date(year, month, 0).getDate();
 
-                let tasksHtml = data.tasks.map(t => `
-                    <div class="task-tag ${t.color}">
-                        <span>${t.time ? `[${t.time}] ` : ''}${t.text}</span>
-                        <span style="font-size:8px; opacity:0.8;">(${t.status || 'Draft'})</span>
-                    </div>
-                `).join('');
+                let todayStr = new Date().toISOString().split('T')[0];
 
-                let imageHtml = data.image ? `<img src="${data.image}" class="day-thumb">` : '';
-
-                grid.innerHTML += `
-                    <div class="day-cell ${data.isImportant ? 'is-important' : ''} ${isTodayCell ? 'is-today' : ''}" style="${matchesSearch ? '' : 'opacity:0.2;'}" onclick="openModal(${currentYear}, ${currentMonth}, ${d})">
-                        <div class="day-number-container">
-                            <span class="day-number">${d}</span>
-                            ${data.isImportant ? '<i class="fa-solid fa-fire" style="color:var(--danger)"></i>' : ''}
-                        </div>
-                        <div class="day-content">${tasksHtml} ${imageHtml}</div>
-                    </div>
-                `;
-            }
-            card.appendChild(grid);
-            container.appendChild(card);
-        }
-
-        function renderTimeGrid(container, numDays) {
-            const card = document.createElement('div');
-            card.className = 'calendar-card';
-            
-            let colTemplate = `70px repeat(${numDays}, 1fr)`;
-            let headerHtml = `<div class="time-grid-header" style="grid-template-columns: ${colTemplate};"><div>დრო</div>`;
-            
-            let startDate = new Date(currentDate);
-            if(numDays === 7) {
-                let dayOfWeek = startDate.getDay();
-                let diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                startDate.setDate(diff);
-            }
-
-            let datesArr = [];
-            for (let i = 0; i < numDays; i++) {
-                let d = new Date(startDate);
-                d.setDate(startDate.getDate() + i);
-                datesArr.push(d);
-                let dayName = weekdaysNames[(d.getDay() + 6) % 7];
-                headerHtml += `<div>${dayName} (${d.getDate()} ${monthsNames[d.getMonth()]})</div>`;
-            }
-            headerHtml += `</div>`;
-
-            let bodyHtml = `<div class="time-grid-container">${headerHtml}`;
-            for (let hour = 8; hour <= 20; hour++) {
-                let timeStr = `${String(hour).padStart(2, '0')}:00`;
-                bodyHtml += `<div class="time-row" style="grid-template-columns: ${colTemplate};"><div class="time-label">${timeStr}</div>`;
-                
-                for (let i = 0; i < numDays; i++) {
-                    let d = datesArr[i];
-                    let key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-                    let data = calendarData[key] || { tasks: [] };
-                    
-                    let matchingTask = data.tasks.find(t => t.time && t.time.startsWith(String(hour).padStart(2, '0')));
-                    let cellContent = matchingTask ? `<div class="grid-task-block">${matchingTask.text}</div>` : '';
-
-                    bodyHtml += `<div class="time-slot-cell" onclick="openModal(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})">${cellContent}</div>`;
+                // Previous month trailing days
+                for (let i = firstDayIndex; i > 0; i--) {
+                    let d = prevTotalDays - i + 1;
+                    gridHTML += `<div class="calendar-cell other-month"><div class="cell-number">${d}</div></div>`;
                 }
-                bodyHtml += `</div>`;
+
+                // Current month days
+                for (let i = 1; i <= totalDays; i++) {
+                    let mStr = String(month + 1).padStart(2, '0');
+                    let dStr = String(i).padStart(2, '0');
+                    let dateString = `${year}-${mStr}-${dStr}`;
+                    let isToday = (dateString === todayStr) ? 'today' : '';
+
+                    let dayEvents = events.filter(e => e.date === dateString);
+                    let eventsHTML = dayEvents.map(ev => `
+                        <div class="event-chip" style="background: ${ev.color || '#2563eb'}15; color: ${ev.color || '#2563eb'}; border: 1px solid ${ev.color || '#2563eb'}40;" onclick="event.stopPropagation(); openModalForEdit('${ev.id}')" title="${ev.title}">
+                            <span>[${ev.time || '00:00'}] ${ev.title}</span>
+                            <i class="fa-solid fa-pen-to-square" style="font-size: 10px;"></i>
+                        </div>
+                    `).join('');
+
+                    gridHTML += `<div class="calendar-cell ${isToday}" onclick="openModalForAddWithDate('${dateString}')">
+                        <div class="cell-number">${i}</div>
+                        <div style="display:flex; flex-direction:column; gap:4px; overflow-y:auto; max-height:80px;">${eventsHTML}</div>
+                    </div>`;
+                }
+
+                gridHTML += `</div>`;
+                container.innerHTML = gridHTML;
+
+            } else if (currentView === 'week') {
+                let startOfWeek = new Date(currentDate);
+                let day = startOfWeek.getDay();
+                let diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+                startOfWeek.setDate(diff);
+
+                titleEl.innerText = `კვირა: ${startOfWeek.getDate()} ${months[startOfWeek.getMonth()]} - დან`;
+
+                let listHTML = `<div class="list-view-container"><h3>კვირის სრული აქტივობები</h3>`;
+                let found = false;
+
+                for (let i = 0; i < 7; i++) {
+                    let d = new Date(startOfWeek);
+                    d.setDate(d.getDate() + i);
+                    let dStr = d.toISOString().split('T')[0];
+
+                    let dayEvents = events.filter(e => e.date === dStr);
+                    dayEvents.forEach(ev => {
+                        found = true;
+                        listHTML += `
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div style="font-size:12px; font-weight:600; color:var(--accent);">${dStr} [${ev.time || '00:00'}] (${ev.category})</div>
+                                    <div class="list-item-title">${ev.title}</div>
+                                    <div class="list-item-desc">${ev.desc || 'აღწერა არ არის'}</div>
+                                </div>
+                                <div class="list-item-actions">
+                                    <button class="btn" onclick="openModalForEdit('${ev.id}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-danger" onclick="deleteEventFromCloud('${ev.id}')"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>`;
+                    });
+                }
+
+                if (!found) listHTML += `<p style="color:var(--text-secondary); text-align:center; padding:20px;">ამ კვირაში ჩანაწერები არ არის.</p>`;
+                listHTML += `</div>`;
+                container.innerHTML = listHTML;
+
+            } else if (currentView === 'day') {
+                let dStr = currentDate.toISOString().split('T')[0];
+                titleEl.innerText = `დღე: ${dStr}`;
+
+                let dayEvents = events.filter(e => e.date === dStr);
+                let listHTML = `<div class="list-view-container"><h3>დღის სრული აქტივობები (${dStr})</h3>`;
+
+                if (dayEvents.length === 0) {
+                    listHTML += `<p style="color:var(--text-secondary); text-align:center; padding:20px;">ამ დღეს ჩანაწერები არ არის.</p>`;
+                } else {
+                    dayEvents.forEach(ev => {
+                        listHTML += `
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div style="font-size:12px; font-weight:600; color:var(--accent);">[${ev.time || '00:00'}] (${ev.category})</div>
+                                    <div class="list-item-title">${ev.title}</div>
+                                    <div class="list-item-desc">${ev.desc || 'აღწერა არ არის'}</div>
+                                </div>
+                                <div class="list-item-actions">
+                                    <button class="btn" onclick="openModalForEdit('${ev.id}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-danger" onclick="deleteEventFromCloud('${ev.id}')"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>`;
+                    });
+                }
+                listHTML += `</div>`;
+                container.innerHTML = listHTML;
             }
-            bodyHtml += `</div>`;
-            card.innerHTML = bodyHtml;
-            container.appendChild(card);
-        }
+        };
 
-        function openModal(y, m, d) {
-            activeDateKey = `${y}-${m}-${d}`;
-            const data = calendarData[activeDateKey] || { tasks: [], comment: '', isImportant: false, image: '' };
-            document.getElementById('modal-date-title').innerText = `დეტალები: ${d} ${monthsNames[m]} ${y}`;
-            document.getElementById('modal-important-checkbox').checked = data.isImportant;
-            document.getElementById('modal-comment-input').value = data.comment || '';
-            tempTasks = [...(data.tasks || [])];
-            tempImage = data.image || '';
-            renderModalTasks();
-            renderImagePreview();
-            document.getElementById('day-modal').style.display = 'flex';
-        }
+        window.openModalForAdd = function() {
+            document.getElementById('eventId').value = '';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('eventTime').value = '00:00';
+            document.getElementById('eventDesc').value = '';
+            document.getElementById('modalTitle').innerText = 'აქციის დამატება';
+            document.getElementById('eventModal').classList.add('active');
+        };
 
-        function closeModal() { document.getElementById('day-modal').style.display = 'none'; }
+        window.openModalForAddWithDate = function(dateStr) {
+            document.getElementById('eventId').value = '';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = dateStr;
+            document.getElementById('eventTime').value = '00:00';
+            document.getElementById('eventDesc').value = '';
+            document.getElementById('modalTitle').innerText = 'აქციის დამატება';
+            document.getElementById('eventModal').classList.add('active');
+        };
 
-        function insertTemplate(text, time, color) {
-            tempTasks.push({ time, text, color, status: 'Draft' });
-            renderModalTasks();
-        }
+        window.openModalForEdit = function(id) {
+            let ev = events.find(item => item.id === id);
+            if (!ev) return;
+            document.getElementById('eventId').value = ev.id;
+            document.getElementById('eventTitle').value = ev.title || '';
+            document.getElementById('eventDate').value = ev.date || '';
+            document.getElementById('eventTime').value = ev.time || '00:00';
+            document.getElementById('eventCategory').value = ev.category || 'კამპანია';
+            document.getElementById('eventColor').value = ev.color || '#2563eb';
+            document.getElementById('eventDesc').value = ev.desc || '';
+            document.getElementById('modalTitle').innerText = 'აქციის რედაქტირება';
+            document.getElementById('eventModal').classList.add('active');
+        };
 
-        function addTaskItem() {
-            const time = document.getElementById('new-task-time').value;
-            const text = document.getElementById('new-task-input').value;
-            const color = document.getElementById('new-task-color').value;
-            const status = document.getElementById('new-task-status').value;
-            if (!text) return;
-            tempTasks.push({ time, text, color, status });
-            document.getElementById('new-task-input').value = '';
-            renderModalTasks();
-        }
+        window.closeModal = function() {
+            document.getElementById('eventModal').classList.remove('active');
+        };
 
-        function addRangeTask() {
-            let sDateStr = document.getElementById('range-start').value;
-            let eDateStr = document.getElementById('range-end').value;
-            let title = document.getElementById('range-title').value;
-            if(!sDateStr || !eDateStr || !title) return;
-
-            let curr = new Date(sDateStr);
-            let end = new Date(eDateStr);
-
-            while(curr <= end) {
-                let k = `${curr.getFullYear()}-${curr.getMonth()}-${curr.getDate()}`;
-                if(!calendarData[k]) calendarData[k] = { tasks: [], isImportant: false, comment: '', image: '' };
-                calendarData[k].tasks.push({ time: '00:00', text: `[კამპანია] ${title}`, color: 'range', status: 'Live' });
-                curr.setDate(curr.getDate() + 1);
+        window.saveEvent = function() {
+            let id = document.getElementById('eventId').value;
+            if (!id) {
+                id = 'event_' + Date.now();
             }
-            saveCloudData();
+            let title = document.getElementById('eventTitle').value;
+            let date = document.getElementById('eventDate').value;
+            let time = document.getElementById('eventTime').value;
+            let category = document.getElementById('eventCategory').value;
+            let color = document.getElementById('eventColor').value;
+            let desc = document.getElementById('eventDesc').value;
+
+            if (!title || !date) {
+                alert('გთხოვთ შეავსოთ დასახელება და თარიღი!');
+                return;
+            }
+
+            saveEventToCloud({ id, title, date, time, category, color, desc });
             closeModal();
-            renderCalendar();
-        }
+        };
 
-        function renderModalTasks() {
-            const container = document.getElementById('modal-tasks-container');
-            container.innerHTML = tempTasks.map((t, idx) => `
-                <div class="task-row">
-                    <span><strong>[${t.time}]</strong> ${t.text} <em style="color:var(--text-secondary)">(${t.status})</em></span>
-                    <button onclick="tempTasks.splice(${idx},1); renderModalTasks()" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    tempImage = e.target.result;
-                    renderImagePreview();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function renderImagePreview() {
-            const container = document.getElementById('image-preview-container');
-            if (tempImage) {
-                container.innerHTML = `
-                    <img src="${tempImage}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color);">
-                    <button type="button" onclick="tempImage=''; renderImagePreview()" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:12px;"><i class="fa-solid fa-trash"></i> წაშლა</button>
-                `;
-            } else {
-                container.innerHTML = `<span style="font-size:11px; color:var(--text-secondary);">ფოტო არ არის</span>`;
-            }
-        }
-
-        function saveDayData() {
-            calendarData[activeDateKey] = {
-                tasks: tempTasks,
-                comment: document.getElementById('modal-comment-input').value,
-                isImportant: document.getElementById('modal-important-checkbox').checked,
-                image: tempImage
-            };
-            saveCloudData();
-            closeModal();
-            renderCalendar();
-        }
-
-        function openTodayModal() { 
-            let curr = new Date();
-            openModal(curr.getFullYear(), curr.getMonth(), curr.getDate()); 
-        }
-        
-        initSelects();
+        loadEventsFromCloud();
     </script>
 </body>
 </html>
